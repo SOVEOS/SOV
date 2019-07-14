@@ -10,8 +10,8 @@ Project Summary and White Paper (html and .pdf) are available at https://soveos.
 
 Working wallet prototype is at https://eossov.one
 
-We will be rewarding early contributors (code audits, medium articles, youtube videos, blogs, etc...) with SOV for a short time.
-Telegram is https://t.me/eossov  Please join if you'd like to get involved!  
+We will be rewarding early contributors (testing contract, code audits, medium articles, youtube videos, blogs, etc...) with SOV for a short time.
+Telegram is https://t.me/eossov  Please join and get involved.  We are open to all :) 
 
 
 
