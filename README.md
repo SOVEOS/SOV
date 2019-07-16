@@ -11,7 +11,7 @@ Each phase is further broke into 7 stages each, for a total of 21 stages.
 
 Deflation also occurs via the Airburn (7.5 million unclaimed tokens that were allocated for Genesis accounts can be destroyed once a week by anyone with an EOS account).  
 
-SOV has no ICO, No Pre-sale, investors, or financial backers of any kinds. 
+SOV has no ICO, No Pre-sale, investors, or financial backers of any kind. 
 SOV is a completely decentralized project open to all who wish to contribute. 
 
 Project Summary and White Paper (html and .pdf) are available at https://soveos.one. .pdf of white paper is also available in this repository.
