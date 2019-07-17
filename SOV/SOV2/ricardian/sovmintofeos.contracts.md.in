@@ -7,7 +7,7 @@ summary: 'Store {{nowrap value}}'
 icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 ---
 
-{{account}} agrees to store {{value}}, causing these specified tokens to be non-transferable, and only transferable upon waiting 3 days after withdraw.
+{{account}} agrees to store {{value}}, causing these specified tokens to be non-transferable, and only transferable 3 days after executing a withdraw action.
 
 
 
@@ -30,7 +30,7 @@ summary: 'Withdraw {{nowrap value}}'
 icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 ---
 
-{{account}} agrees to withdraw {{value}}, which will become transferable 3 days after signing this transaction. Any funds already in process of withdraw will be renewed and the 3 days will start over.
+{{account}} agrees to withdraw {{value}}, which will become transferable 3 days after this action. The withdraw process will be reset to 3 days for any tokens currently in withdraw at the time of this action.  
 
 
 
@@ -54,7 +54,7 @@ summary: 'Airgrab {{nowrap amount}}'
 icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 ---
 
-{{account}} agrees to airgrab {{amount}}, this is not an investment contract.
+{{account}} agrees to airgrab {{amount}}, this is not an investment contract nor does it represent any type of claim, loan or ownership interest.  Airgrabbing SOV tokens does not provide airgrabber with rights of any form, including, but not limited to, any voting, or other financial or legal rights.
 
 
 
@@ -77,7 +77,7 @@ summary: 'Airburn {{nowrap amount}}'
 icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 ---
 
-{{account}} agrees to burn {{amount}} from the balance of {{$action.account}}.
+{{account}} agrees to burn {{amount}} from the balance of {{$action.account}}.     
 
 
 
