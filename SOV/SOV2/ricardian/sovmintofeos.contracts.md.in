@@ -7,7 +7,7 @@ summary: 'Store {{nowrap value}}'
 icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 ---
 
-{{account}} agrees to store {{value}}, causing these specified tokens to be non-transferable, and only transferable 3 days after executing a withdraw action.
+{{account}} agrees to store {{value}}, causing these specified tokens to be non-transferable, and only transferable upon waiting 3 days after executing a withdraw action.
 
 
 
