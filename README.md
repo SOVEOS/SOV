@@ -20,7 +20,7 @@ SOV is a completely decentralized project open to all who wish to contribute.
 
 Project Summary and White Paper (html and .pdf) are available at https://soveos.one. .pdf of white paper is also available in this repository.
 
-Working wallet prototype is at https://eossov.one
+SOV Wallet is at https://eossov.one
 
 We will be rewarding early contributors (testing contract, code audits, medium articles, youtube videos, blogs, etc...) with SOV for a short time / while SOV from reverberation fund is available. 
 
