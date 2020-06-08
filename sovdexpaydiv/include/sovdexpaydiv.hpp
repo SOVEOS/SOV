@@ -45,29 +45,6 @@ CONTRACT sovdexpaydiv : public contract {
 
 
 
-    TABLE currencytable {
-      
-      asset currency;
-      
-      auto primary_key() const { return currency.symbol.code().raw(); }
-    };
-    typedef multi_index<name("currencytable"), currencytable> currency_table;
-
-
-
-    TABLE payoutstable {
-      
-      asset     token;
-      asset     queue;
-      
-      
-      auto primary_key() const { return token.symbol.code().raw(); }
-    };
-    typedef multi_index<name("payoutstable"), payoutstable> payouts_table;
-
-
-
-
     TABLE svxstakestat {
       
       asset      clubstaked;
@@ -94,11 +71,11 @@ CONTRACT sovdexpaydiv : public contract {
       asset      startpay_btc;
       asset      startpay_svx;
 
-      int loadingratio; //determines the rate at which divs are loaded from the queue to the active round
+      int        loadingratio; //determines the rate at which divs are loaded from the queue to the active round
 
       asset      clubstakestart; //the amount of SVX staked in 777 club at the start of the active round
       
-      int   payoutstarttime; //the time of the start if the rounf 
+      int        payoutstarttime; //the time of the start if the rounf 
       
       
       
@@ -109,22 +86,29 @@ CONTRACT sovdexpaydiv : public contract {
 
 
 
-    //GETTERS
-/**
-    asset get_current_token(){
 
-        asset token; 
 
-        queue_table queuetable(get_self(), get_self().value);
-        auto existing = queuetable.find(get_self().value);
+     struct [[eosio::table]] account {
+            asset    balance;
+            asset    storebalance;
+            asset    svxpower;
+            asset    unstaking;
+            uint32_t  unstake_time;
+            
 
-        token = existing->currenttoken;
+            uint64_t primary_key()const { return balance.symbol.code().raw(); }
+         };
+  
+        typedef eosio::multi_index< "accounts"_n, account > accounts;
 
-        return token;
+        
+        static asset get_stored_balance( const name& token_contract_account, const name& owner, const symbol_code& sym_code )
+         {
+            accounts accountstable( token_contract_account, owner.value );
+            const auto& ac = accountstable.get( sym_code.raw() );
+            return ac.storebalance;
 
-  }
-
-**/
+//----------------------------------------------------------------------------------------------------------------
 
     name get_current_payee(){
 
@@ -388,7 +372,64 @@ CONTRACT sovdexpaydiv : public contract {
 
   void update_global_stake(name user, asset stakechange, uint32_t staketime){
 
-      //global and individual user stake
+   //1 case one, didnt have 777k, staked and still doesnt have 777k - edit nothing 
+   //2 case two, had 777k, staked and now has even more - modify global, modify club table
+   //3 case three didnt have 777k, but now has 777k - modify global stake, emplace club stake table
+   
+   
+    //1 find svx stored
+
+    asset stored = get_stored_balance(name{"svxmintofeos"}, user, symbol_code("SVX") );
+
+    if (stored.amount < (777000*1000)){  //CASE1 CONSIDERED: NOW DOESNT HAVE 777K STAKED
+        
+        return;
+
+    }
+
+    stake_table staketable(get_self(), get_self().value);
+    auto existing = staketable.find(user.value);
+    const auto& st = *existing;
+
+
+    svxstake_stat globalstake(get_self(),get_self().value);
+    auto existing2 = globalstake.find(symbol_code("SVX"));
+    const auto& st2 = *existing2;
+
+
+    if (existing == staketable.end()){ //CASE 3 CONSIDERED: DIDNT HAVE 777K STAKED BUT NOW DOES
+
+        staketable.emplace( get_self(), [&]( auto& s ) {
+
+                        s.staker = user;
+                        s.svxstaked = stored;
+                        s.staketime = current_time_point().sec_since_epoch();
+
+                  });
+    
+    }
+
+    else { //CASE3 CONSIDERED: HAS 777K STAKED, STAKED EVEN MORE
+
+        staketable.modify( st, same_payer, [&]( auto& s ) {
+
+                        s.staker = user;
+                        s.svxstaked = s.svxstaked + stakechange;
+                        s.staketime = current_time_point().sec_since_epoch();
+
+                  });
+
+
+    }
+
+
+
+
+  }
+
+  void update_global_unstake(name user, asset stakechange, uint32_t staketime){
+
+    
 
   }
 

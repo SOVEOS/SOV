@@ -181,6 +181,13 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
 
 [[eosio::on_notify("svxmintofeos::stake")]] void sovdexpaydiv::setstake(name account, asset value){
 
+//check if user now has 777k or more SVX staked. (initialize svxmintofeos table and read staked amount)
+
+      //if user already has 777k or more svx staked, add new stake amount to global svx table
+
+      //if yes, see if they are already in club, if not add them, record total svx staked and time of last stake into the table
+      // also increase global stake table
+
 
 
 }
