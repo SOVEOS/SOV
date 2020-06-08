@@ -136,11 +136,7 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
     
     sendasset(payee, divpayment_svx, "SVX Payout 777 Club Member");
 
-    //iterate to next payee
-    //check if payee was last payee on the table, if so:
-    //1 begin new payment round:
-            //a. current payee becomes start of the table
-            //b. queue gets 1% moved to active round 
+    
             
     
     
@@ -181,12 +177,7 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
 
 [[eosio::on_notify("svxmintofeos::stake")]] void sovdexpaydiv::setstake(name account, asset value){
 
-//check if user now has 777k or more SVX staked. (initialize svxmintofeos table and read staked amount)
-
-      //if user already has 777k or more svx staked, add new stake amount to global svx table
-
-      //if yes, see if they are already in club, if not add them, record total svx staked and time of last stake into the table
-      // also increase global stake table
+      update_global_stake(account, value);
 
 
 
@@ -195,6 +186,6 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
 
 [[eosio::on_notify("svxmintofeos::unstake")]] void sovdexpaydiv::setunstake(name account, asset value){
 
-
+      update_global_unstake(account, value);
 
 }

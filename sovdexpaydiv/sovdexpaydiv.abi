@@ -4,12 +4,28 @@
     "types": [],
     "structs": [
         {
-            "name": "currencytable",
+            "name": "account",
             "base": "",
             "fields": [
                 {
-                    "name": "currency",
+                    "name": "balance",
                     "type": "asset"
+                },
+                {
+                    "name": "storebalance",
+                    "type": "asset"
+                },
+                {
+                    "name": "svxpower",
+                    "type": "asset"
+                },
+                {
+                    "name": "unstaking",
+                    "type": "asset"
+                },
+                {
+                    "name": "unstake_time",
+                    "type": "uint32"
                 }
             ]
         },
@@ -42,20 +58,6 @@
                 {
                     "name": "laststaketime",
                     "type": "int32"
-                }
-            ]
-        },
-        {
-            "name": "payoutstable",
-            "base": "",
-            "fields": [
-                {
-                    "name": "token",
-                    "type": "asset"
-                },
-                {
-                    "name": "queue",
-                    "type": "asset"
                 }
             ]
         },
@@ -132,6 +134,10 @@
             "base": "",
             "fields": [
                 {
+                    "name": "contract",
+                    "type": "name"
+                },
+                {
                     "name": "clubstaked",
                     "type": "asset"
                 }
@@ -152,15 +158,8 @@
     ],
     "tables": [
         {
-            "name": "currencytable",
-            "type": "currencytable",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "payoutstable",
-            "type": "payoutstable",
+            "name": "accounts",
+            "type": "account",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

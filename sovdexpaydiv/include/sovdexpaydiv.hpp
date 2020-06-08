@@ -46,11 +46,11 @@ CONTRACT sovdexpaydiv : public contract {
 
 
     TABLE svxstakestat {
-      
+      name       contract;
       asset      clubstaked;
      
       
-      auto primary_key() const { return clubstaked.symbol.code().raw(); }
+      auto primary_key() const { return contract.value; }
     };
     typedef multi_index<name("svxstakestat"), svxstakestat> svxstake_stat;
 
@@ -107,6 +107,7 @@ CONTRACT sovdexpaydiv : public contract {
             accounts accountstable( token_contract_account, owner.value );
             const auto& ac = accountstable.get( sym_code.raw() );
             return ac.storebalance;
+        }
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -370,11 +371,14 @@ CONTRACT sovdexpaydiv : public contract {
 
   }
 
-  void update_global_stake(name user, asset stakechange, uint32_t staketime){
+  void update_global_stake(name user, asset stakechange){
 
    //1 case one, didnt have 777k, staked and still doesnt have 777k - edit nothing 
    //2 case two, had 777k, staked and now has even more - modify global, modify club table
    //3 case three didnt have 777k, but now has 777k - modify global stake, emplace club stake table
+
+   //snapshot 1, internal stake club table (status and stake before the change) 
+   //snapshot 2 svx storedbalance table (real current stake value)
    
    
     //1 find svx stored
@@ -393,7 +397,7 @@ CONTRACT sovdexpaydiv : public contract {
 
 
     svxstake_stat globalstake(get_self(),get_self().value);
-    auto existing2 = globalstake.find(symbol_code("SVX"));
+    auto existing2 = globalstake.find(get_self().value);
     const auto& st2 = *existing2;
 
 
@@ -406,6 +410,11 @@ CONTRACT sovdexpaydiv : public contract {
                         s.staketime = current_time_point().sec_since_epoch();
 
                   });
+        globalstake.modify( st2, same_payer, [&]( auto& s ) {
+
+                        s.clubstaked = s.clubstaked + stakechange;
+
+                  });
     
     }
 
@@ -413,9 +422,13 @@ CONTRACT sovdexpaydiv : public contract {
 
         staketable.modify( st, same_payer, [&]( auto& s ) {
 
-                        s.staker = user;
                         s.svxstaked = s.svxstaked + stakechange;
                         s.staketime = current_time_point().sec_since_epoch();
+
+                  });
+        globalstake.modify( st2, same_payer, [&]( auto& s ) {
+
+                        s.clubstaked = s.clubstaked + stakechange;
 
                   });
 
@@ -427,15 +440,85 @@ CONTRACT sovdexpaydiv : public contract {
 
   }
 
-  void update_global_unstake(name user, asset stakechange, uint32_t staketime){
+  void update_global_unstake(name user, asset stakechange){
 
-    
+    //CASE1 person with less than 777k unstakes, do nothing -> nothing
+    //CASE 2 person with 777k unstakes and still has > 777k -> modify stake club entry, modify global stake
+    //CASE 3 person with 777k unstakes and no longer has 777k ->delete stake club entry, modify global stake
+    //snapshot 1, internal stake club table (status and stake before the change) 
+    //snapshot 2 svx storedbalance table (real current stake value)
+
+
+
+
+    stake_table staketable(get_self(), get_self().value);
+    auto existing = staketable.find(user.value);
+    const auto& st = *existing;
+
+    svxstake_stat globalstake(get_self(),get_self().value);
+    auto existing2 = globalstake.find(get_self().value);
+    const auto& st2 = *existing2;
+
+
+
+    if (existing == staketable.end()){
+
+        return; //CASE 1 ADDRESSED HERE
+
+    }
+
+    asset stored = get_stored_balance(name{"svxmintofeos"}, user, symbol_code("SVX") );
+
+    if (stored.amount < (777000*1000)){
+        
+        staketable.erase(existing);
+        
+        globalstake.modify( st2, same_payer, [&]( auto& s ) {
+
+                        s.clubstaked = s.clubstaked - stakechange;
+
+                  });
+        
+    }
+
+    else{
+
+        staketable.modify( st, same_payer, [&]( auto& s ) {
+
+                        s.svxstaked = s.svxstaked - stakechange;
+                        s.staketime = current_time_point().sec_since_epoch();
+                    });
+
+        globalstake.modify( st2, same_payer, [&]( auto& s ) {
+
+                        s.clubstaked = s.clubstaked - stakechange;
+
+                  });
+
+
+
+    }
+
 
   }
 
   
 
+void set_next_round(){
 
+//iterate to next payee
+//if payee wasnt last on the table, return;
+    //check if payee was last payee on the table, if so, begin new payment round:
+            
+            //a. current payee set to the start of the staking table
+            //b. queue gets 1% moved to active round, so move 1% of loading ratio from remaining pay to starting pay for all 3 assets
+            //c. global stake at start needs to get updated, scan through table and add up all club stake at this moment in time
+            //d.set new payout start time
+
+
+
+
+}
 
  
 
