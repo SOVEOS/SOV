@@ -4,6 +4,7 @@
 [[eosio::action]] 
 void sovdexpaydiv::initialize(name contract, asset clubstaked){
 
+      require_auth(get_self());
 
       queue_table queuetable(get_self(), get_self().value);
       auto existing = queuetable.find(get_self().value);
@@ -29,17 +30,41 @@ void sovdexpaydiv::initialize(name contract, asset clubstaked){
                   
       });
 
+      svxstake_stat globalstake(get_self(),get_self().value);
+      auto existing2 = globalstake.find(get_self().value);
+      
+      globalstake.emplace( get_self(), [&]( auto& s ) {
+
+            s.contract = name{"sovdexpaydiv"};
+            s.clubstaked = asset(0, symbol("SVX", 4));
+
+      });
+
 }
 
 [[eosio::action]] 
 void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
 
+      require_auth(get_self());
+
 
       stake_table staketable(get_self(), get_self().value);
-
       auto existing = staketable.find(user.value);
-
       const auto& st = *existing;
+
+
+
+      svxstake_stat globalstake(get_self(),get_self().value);
+      auto existing2 = globalstake.find(get_self().value);
+      const auto& st2 = *existing2;
+
+
+      globalstake.modify( st2, same_payer, [&]( auto& s ) {
+
+                        s.clubstaked = s.clubstaked + svxstaked;
+
+                  });
+      
 
       if (existing == staketable.end()){
 
@@ -75,8 +100,23 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
 }
 
 
+[[eosio::action]] 
+void sovdexpaydiv::modifylr(name user, int loadingratio){
+
+      require_auth(get_self());
+      
+      queue_table queuetable(get_self(), get_self().value);
+      auto existing = queuetable.find(get_self().value);
+      const auto& st = *existing;
+
+      queuetable.modify( st, same_payer, [&]( auto& s ) {
+            s.loadingratio = loadingratio;
+      });
 
 
+
+
+}
 
 
  [[eosio::on_notify("sovdexrelays::minereceipt")]] void sovdexpaydiv::paydiv(name user, asset sovburned, asset minepool){
@@ -136,6 +176,9 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
     
     sendasset(payee, divpayment_svx, "SVX Payout 777 Club Member");
 
+
+    set_next_round();
+
     
             
     
@@ -152,14 +195,14 @@ void sovdexpaydiv::intstaker(name user, asset svxstaked, int laststaketime){
  }
 
 
-[[eosio::on_notify("goldgoldgold::transfer")]] void sovdexpaydiv::insertgold(name from, name to, asset quantity, std::string memo){
+[[eosio::on_notify("fakexautforu::transfer")]] void sovdexpaydiv::insertgold(name from, name to, asset quantity, std::string memo){
       if (from ==get_self() || to != get_self()){
             return;
       }
       update_queue(quantity);
 
 }
-[[eosio::on_notify("btcbtcbtcbtc::transfer")]] void sovdexpaydiv::insertbtc(name from, name to, asset quantity, std::string memo){
+[[eosio::on_notify("fakepbtcforu::transfer")]] void sovdexpaydiv::insertbtc(name from, name to, asset quantity, std::string memo){
       if (from ==get_self() || to != get_self()){
             return;
       }

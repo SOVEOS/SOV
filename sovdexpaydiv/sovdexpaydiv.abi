@@ -62,6 +62,20 @@
             ]
         },
         {
+            "name": "modifylr",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "loadingratio",
+                    "type": "int32"
+                }
+            ]
+        },
+        {
             "name": "queuetable",
             "base": "",
             "fields": [
@@ -153,6 +167,11 @@
         {
             "name": "intstaker",
             "type": "intstaker",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "modifylr",
+            "type": "modifylr",
             "ricardian_contract": ""
         }
     ],

@@ -19,12 +19,17 @@ CONTRACT sovdexpaydiv : public contract {
     [[eosio::action]] 
     void intstaker(name user, asset svxstaked, int laststaketime);
 
+    //modify loading ratio
+
+    [[eosio::action]] 
+    void modifylr(name user, int loadingratio);
+
     //listen to mining 
     [[eosio::on_notify("sovdexrelays::minereceipt")]] void paydiv(name user, eosio::asset sovburned, asset minepool);
 
     //listen to transfers to get paid out
-    [[eosio::on_notify("goldgoldgold::transfer")]] void insertgold(name from, name to, asset quantity, std::string memo);
-    [[eosio::on_notify("btcbtcbtcbtc::transfer")]] void insertbtc(name from, name to, asset quantity, std::string memo);
+    [[eosio::on_notify("fakexautforu::transfer")]] void insertgold(name from, name to, asset quantity, std::string memo);
+    [[eosio::on_notify("fakepbtcforu::transfer")]] void insertbtc(name from, name to, asset quantity, std::string memo);
     [[eosio::on_notify("svxmintofeos::transfer")]] void insertsvx(name from, name to, asset quantity, std::string memo);
     
     //listen to stake / unstake
@@ -123,6 +128,75 @@ CONTRACT sovdexpaydiv : public contract {
         return payee;
 
     }
+
+    name get_next_payee(){
+
+        name nextpayee;
+        
+        name current_payee = get_current_payee();
+
+        stake_table staketable(get_self(), get_self().value);
+        auto existing = staketable.find(current_payee.value);
+        existing = existing++;
+
+        if (existing == staketable.end()){
+
+            existing = staketable.begin();
+        }
+
+        nextpayee = existing->staker;
+
+        return nextpayee;
+    }
+
+    void set_next_payee(){
+
+
+        name nextpayee = get_next_payee();
+
+        queue_table queuetable(get_self(), get_self().value);
+        auto existing = queuetable.find(get_self().value);
+        check( existing != queuetable.end(), "contract table not deployed" );
+        const auto& st = *existing;
+
+        queuetable.modify( st, same_payer, [&]( auto& s ) {
+                   
+                    s.currentpayee = nextpayee;
+
+        });
+
+        
+
+
+    }
+
+    bool is_payee_last(){
+
+        name nextpayee;
+        
+        name current_payee = get_current_payee();
+
+        stake_table staketable(get_self(), get_self().value);
+        auto existing = staketable.find(current_payee.value);
+        existing = existing++;
+
+        if (existing == staketable.end()){
+
+            return true;
+        }
+
+        else{
+
+            return false;
+        }
+
+
+
+
+
+    }
+
+
 //------------------ remaining pay getters --------------------------------------------------------//
 
     asset get_remaining_pay_gold(){
@@ -282,26 +356,26 @@ CONTRACT sovdexpaydiv : public contract {
 
       std::string sym =  quantity.symbol.code().to_string();
 
-      if (quantity.amount < 0){
+      if (quantity.amount <= 0){
 
           return;
       }
 
-/**
+
      if (sym == "PBTC"){
         
-          action(permission_level{_self, "active"_n}, "TODOFILLCONTRACTHERE"_n, "transfer"_n, 
-          std::make_tuple(get_self(), user, quantity, std::string("SVX send"))).send();
+          action(permission_level{_self, "active"_n}, "fakepbtcforu"_n, "transfer"_n, 
+          std::make_tuple(get_self(), user, quantity, std::string("PBTC send"))).send();
         
       }
 
       if (sym == "XAUT"){
         
-          action(permission_level{_self, "active"_n}, "TODOFILLCONTRACTHERE"_n, "transfer"_n, 
-          std::make_tuple(get_self(), user, quantity, std::string("EOS send"))).send();
+          action(permission_level{_self, "active"_n}, "fakexautforu"_n, "transfer"_n, 
+          std::make_tuple(get_self(), user, quantity, std::string("XAUT send"))).send();
         
       }
-  **/
+  
       
      if (sym == "SVX"){
         
@@ -385,7 +459,7 @@ CONTRACT sovdexpaydiv : public contract {
 
     asset stored = get_stored_balance(name{"svxmintofeos"}, user, symbol_code("SVX") );
 
-    if (stored.amount < (777000*1000)){  //CASE1 CONSIDERED: NOW DOESNT HAVE 777K STAKED
+    if (stored.amount/10000 < (777000)){  //CASE1 CONSIDERED: NOW DOESNT HAVE 777K STAKED
         
         return;
 
@@ -469,7 +543,7 @@ CONTRACT sovdexpaydiv : public contract {
 
     asset stored = get_stored_balance(name{"svxmintofeos"}, user, symbol_code("SVX") );
 
-    if (stored.amount < (777000*1000)){
+    if (stored.amount/10000 < (777000)){
         
         staketable.erase(existing);
         
@@ -502,29 +576,142 @@ CONTRACT sovdexpaydiv : public contract {
 
   }
 
-  
+  asset get_current_club_stake(){
+
+        
+        svxstake_stat globalstake(get_self(),get_self().value);
+        auto existing2 = globalstake.find(get_self().value);
+        asset ccs = existing2->clubstaked;
+
+        return ccs;
+
+        //asset ccs = asset(0, symbol("SVX", 4));
+        
+        /**
+        stake_table staketable(get_self(), get_self().value);
+        for (auto it = staketable.begin(); it != staketables.end(); it++){
+
+            ccs = ccs + (it->svxstaked);
+
+        }
+
+        return ccs;
+
+        **/
+
+  }
+
+  void set_start_stake(){
+
+        
+        queue_table queuetable(get_self(), get_self().value);
+        auto existing = queuetable.find(get_self().value);
+        check( existing != queuetable.end(), "contract table not deployed" );
+        const auto& st = *existing;
+
+        queuetable.modify( st, same_payer, [&]( auto& s ) {
+                    
+                    s.clubstakestart = get_current_club_stake();
+                    s.payoutstarttime = current_time_point().sec_since_epoch();
+                
+                });
+
+
+  }
+
+  void set_gold_rpsp(){
+
+        
+        queue_table queuetable(get_self(), get_self().value);
+        auto existing = queuetable.find(get_self().value);
+        check( existing != queuetable.end(), "contract table not deployed" );
+        const auto& st = *existing;
+
+
+        int lr = get_loading_ratio();
+        asset sp = lr*get_remaining_pay_gold()/1000;
+
+                queuetable.modify( st, same_payer, [&]( auto& s ) {
+                    s.startpay_gold = sp;
+                    s.remainingpay_gold = s.remainingpay_gold - s.startpay_gold;
+                });
+
+}
+
+  void set_svx_rpsp(){
+
+        queue_table queuetable(get_self(), get_self().value);
+        auto existing = queuetable.find(get_self().value);
+        check( existing != queuetable.end(), "contract table not deployed" );
+        const auto& st = *existing;
+
+
+        int lr = get_loading_ratio();
+        asset sp = lr*get_remaining_pay_svx()/1000;
+
+                queuetable.modify( st, same_payer, [&]( auto& s ) {
+                    s.startpay_svx = sp;
+                    s.remainingpay_svx = s.remainingpay_svx - s.startpay_svx;
+                });
+
+  }
+
+  void set_btc_rpsp(){
+
+        queue_table queuetable(get_self(), get_self().value);
+        auto existing = queuetable.find(get_self().value);
+        check( existing != queuetable.end(), "contract table not deployed" );
+        const auto& st = *existing;
+
+
+        int lr = get_loading_ratio();
+        asset sp = lr*get_remaining_pay_btc()/1000;
+
+                queuetable.modify( st, same_payer, [&]( auto& s ) {
+                    s.startpay_gold = sp;
+                    s.remainingpay_btc = s.remainingpay_btc - s.startpay_btc;
+                });
+
+  }
 
 void set_next_round(){
 
-//iterate to next payee
-//if payee wasnt last on the table, return;
-    //check if payee was last payee on the table, if so, begin new payment round:
-            
-            //a. current payee set to the start of the staking table
-            //b. queue gets 1% moved to active round, so move 1% of loading ratio from remaining pay to starting pay for all 3 assets
-            //c. global stake at start needs to get updated, scan through table and add up all club stake at this moment in time
-            //d.set new payout start time
+//iterate to next 
+        //a next payee from local stake table
+        //b set current payee to the payee you just retrieved
+        //c check if payee was last payee on the table, if so, begin new payment round
+        //d. current payee set to the start of the staking table
+        //e. queue gets 0.1% moved to active round, so move 0.1% of loading ratio from remaining pay to starting pay for all 3 assets
+        //f. global stake at start needs to get updated in queue table
+        //g.set new payout start time
 
+
+        bool restart_req = is_payee_last(); // c, new payment round is required if true
+
+        set_next_payee(); // a & b & d accomplished here 
+
+        if (restart_req == false){
+
+            return;
+
+        }
+
+        //c: new round required, new round code here and below:
+
+        //e: 
+        set_btc_rpsp();
+        set_svx_rpsp();
+        set_gold_rpsp();
+
+        //f&g: 
+        set_start_stake();
+      
 
 
 
 }
 
  
-
-
-
-
 
 };
 
